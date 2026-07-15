@@ -86,11 +86,19 @@ export class TerraClimateStack extends cdk.Stack {
       timeout: cdk.Duration.seconds(30),
       memorySize: 512,
       environment: {
-        DATABASE_URL: 'your-production-postgres-db-url',
-        WEATHER_AI_API_KEY: 'your-production-weather-ai-key',
+        DATABASE_URL: process.env.DATABASE_URL || 'your-production-postgres-db-url',
+        WEATHER_AI_API_KEY: process.env.WEATHER_AI_API_KEY || 'your-production-weather-ai-key',
+        REDIS_URL: process.env.REDIS_URL || '',
         AWS_SQS_QUEUE_URL: notificationQueue.queueUrl,
         AWS_S3_UPLOAD_BUCKET: uploadsBucket.bucketName,
-        // Firebase configurations will be mounted during runtime configuration/deployment stage
+        FIREBASE_PROJECT_ID: process.env.FIREBASE_PROJECT_ID || '',
+        FIREBASE_CLIENT_EMAIL: process.env.FIREBASE_CLIENT_EMAIL || '',
+        FIREBASE_PRIVATE_KEY: process.env.FIREBASE_PRIVATE_KEY || '',
+        EMAIL_USER: process.env.EMAIL_USER || '',
+        EMAIL_APP_PASSWORD: process.env.EMAIL_APP_PASSWORD || '',
+        TWILIO_ACCOUNT_SID: process.env.TWILIO_ACCOUNT_SID || '',
+        TWILIO_AUTH_TOKEN: process.env.TWILIO_AUTH_TOKEN || '',
+        TWILIO_PHONE_NUMBER: process.env.TWILIO_PHONE_NUMBER || '',
       },
     });
 

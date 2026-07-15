@@ -12,7 +12,16 @@ export const verifyAuth = async (req, res, next) => {
 
   try {
     // Verify Firebase token (will run mock verifications if Firebase keys are absent)
-    const decodedToken = await firebaseAdmin.auth().verifyIdToken(token);
+    let decodedToken;
+    if (!firebaseAdmin.isActive) {
+      decodedToken = {
+        uid: 'demo_user_id',
+        email: 'demo-farmer@terraclimate.demo',
+        name: 'Demo Production Farmer'
+      };
+    } else {
+      decodedToken = await firebaseAdmin.auth().verifyIdToken(token);
+    }
     
     const userPayload = {
       id: decodedToken.uid,

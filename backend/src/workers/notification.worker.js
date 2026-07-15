@@ -60,23 +60,27 @@ const processMessage = async (msg) => {
       const firestore = firebaseAdmin.firestore();
       const timestamp = new Date();
 
-      if (type === 'GLOBAL_BROADCAST') {
-        await firestore.collection('global_broadcasts').add({
-          message,
-          createdAt: timestamp
-        });
-        console.log(`[Worker] [In-App Channel] Realtime global alert written to Firestore /global_broadcasts`);
-      } else if (type === 'USER_ALERT') {
-        await firestore.collection('users').doc(userId).collection('notifications').add({
-          message,
-          farmId: farmId || null,
-          farmName: farmName || 'Your Farm',
-          alertType: alertType || 'WEATHER_ALERT',
-          createdAt: timestamp,
-          read: false,
-          alertLogId: alertLogId
-        });
-        console.log(`[Worker] [In-App Channel] Realtime targeted alert written to Firestore for User: ${userId}`);
+      if (firestore) {
+        if (type === 'GLOBAL_BROADCAST') {
+          await firestore.collection('global_broadcasts').add({
+            message,
+            createdAt: timestamp
+          });
+          console.log(`[Worker] [In-App Channel] Realtime global alert written to Firestore /global_broadcasts`);
+        } else if (type === 'USER_ALERT') {
+          await firestore.collection('users').doc(userId).collection('notifications').add({
+            message,
+            farmId: farmId || null,
+            farmName: farmName || 'Your Farm',
+            alertType: alertType || 'WEATHER_ALERT',
+            createdAt: timestamp,
+            read: false,
+            alertLogId: alertLogId
+          });
+          console.log(`[Worker] [In-App Channel] Realtime targeted alert written to Firestore for User: ${userId}`);
+        }
+      } else {
+        console.warn(`[Worker] [In-App Channel] Skipped writing to Firestore: SDK is not active.`);
       }
     } else {
       console.log(`[Worker] [In-App Channel] Disabled by user alert configuration.`);
