@@ -314,6 +314,15 @@ class WeatherService {
       throw err;
     }
   }
+
+  async getIpLookup(ip) {
+    const cacheKey = `weather:ip:${ip}`;
+    return this.fetchWithProxy(
+      '/v1/ip-lookup',
+      { ip },
+      cacheKey
+    );
+  }
 }
 
 export const weatherService = new WeatherService();
