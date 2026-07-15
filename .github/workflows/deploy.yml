@@ -1,0 +1,70 @@
+name: Build & Serverless Deploy
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    name: Build and Deploy Stack
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install Dependencies
+        run: npm run install:all
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-2
+
+      - name: Deploy AWS CDK Infrastructure
+        run: |
+          cd infra
+          npx cdk deploy --require-approval never
+
+      - name: Fetch Deployment Target Outputs
+        id: cfn_outputs
+        run: |
+          OUTPUTS=$(aws cloudformation describe-stacks --stack-name TerraClimateStack --region us-east-2 --query "Stacks[0].Outputs" --output json)
+          
+          BUCKET=$(echo $OUTPUTS | jq -r '.[] | select(.OutputKey=="FrontendBucketName") | .OutputValue')
+          DIST_ID=$(echo $OUTPUTS | jq -r '.[] | select(.OutputKey=="CloudFrontDistributionId") | .OutputValue')
+          API_URL=$(echo $OUTPUTS | jq -r '.[] | select(.OutputKey=="ApiGatewayBaseUrl") | .OutputValue')
+          
+          echo "BUCKET_NAME=$BUCKET" >> $GITHUB_ENV
+          echo "DISTRIBUTION_ID=$DIST_ID" >> $GITHUB_ENV
+          echo "VITE_API_URL=$API_URL" >> $GITHUB_ENV
+
+      - name: Build React Frontend
+        env:
+          VITE_API_URL: ${{ env.VITE_API_URL }}
+          VITE_FIREBASE_API_KEY: ${{ secrets.VITE_FIREBASE_API_KEY }}
+          VITE_FIREBASE_AUTH_DOMAIN: ${{ secrets.VITE_FIREBASE_AUTH_DOMAIN }}
+          VITE_FIREBASE_PROJECT_ID: ${{ secrets.VITE_FIREBASE_PROJECT_ID }}
+          VITE_FIREBASE_STORAGE_BUCKET: ${{ secrets.VITE_FIREBASE_STORAGE_BUCKET }}
+          VITE_FIREBASE_SENDER_ID: ${{ secrets.VITE_FIREBASE_SENDER_ID }}
+          VITE_FIREBASE_APP_ID: ${{ secrets.VITE_FIREBASE_APP_ID }}
+        run: |
+          cd frontend
+          npm run build
+
+      - name: Deploy to S3 Bucket
+        run: |
+          aws s3 sync frontend/dist s3://${{ env.BUCKET_NAME }} --delete
+
+      - name: Invalidate CloudFront Cache
+        run: |
+          aws cloudfront create-invalidation --distribution-id ${{ env.DISTRIBUTION_ID }} --paths "/*"

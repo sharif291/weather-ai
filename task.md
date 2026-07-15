@@ -1,0 +1,40 @@
+# Tasks: TerraClimate Development
+
+- [x] **1. Project Initialization & Basic Configs**
+  - [x] Create root-level configuration and `.gitignore`
+  - [x] Initialize `backend` directory (NPM packages, Prisma initialization)
+  - [x] Initialize `frontend` directory (Vite + React, Tailwind v4 setup)
+  - [x] Initialize `infra` directory (AWS CDK packages)
+- [x] **2. Backend Development**
+  - [x] Setup Prisma PostgreSQL schema (`prisma/schema.prisma`)
+  - [x] Implement Core Services:
+    - [x] Configuration manager (`src/core/config.js`)
+    - [x] Prisma Client (`src/core/db.js`)
+    - [x] Caching client with local fallback (`src/core/redis.js`)
+    - [x] AWS SQS / memory queue client (`src/core/queue.js`)
+    - [x] AWS S3 / local path upload proxy (`src/core/s3.js`)
+    - [x] Firebase Admin + authentication verification middleware (`src/core/auth.js`, `src/core/firebase.js`)
+  - [x] Implement Module Features:
+    - [x] Weather proxy endpoints (`src/modules/weather/`)
+    - [x] Farms CRUD & presigned URLs (`src/modules/farms/`)
+  - [x] Implement Background Worker (`src/workers/notification.worker.js`)
+  - [x] Setup Express App Initializers (`server.js`, `lambda.js`)
+- [x] **3. Frontend Development**
+  - [x] Setup Tailwind CSS v4 configurations
+  - [x] Create service managers (`src/services/firebase.js`, `src/services/api.js`)
+  - [x] Implement custom hooks (`useWeather`, `useFarms`, `useRealtimeAlerts`)
+  - [x] Build atomic components:
+    - [x] `NotificationToast.jsx` (Real-time in-app alerts)
+    - [x] `ImageUploader.jsx` (S3 upload node)
+  - [x] Build operational views:
+    - [x] `FarmPlanner.jsx` (Crop alert checks)
+    - [x] `AgriTimeline.jsx` (24-hour operations slider, charts, history)
+    - [x] `SettingsDrawer.jsx` (Quotas, key setup, diagnostics console)
+  - [x] Assemble layouts inside `App.jsx`
+- [x] **4. Infrastructure as Code (AWS CDK)**
+  - [x] Write typescript stack (`infra/lib/terraclimate-stack.ts`)
+- [x] **5. Verification & Final Polish**
+  - [x] Run and verify API routes locally
+  - [x] Test the SQS-to-Firebase real-time alert toast pipeline
+  - [x] Confirm frontend and backend builds compile without error
+  - [x] Create `walkthrough.md` with walkthrough and architecture layout

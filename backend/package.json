@@ -1,0 +1,34 @@
+{
+  "name": "terraclimate-backend",
+  "version": "1.0.0",
+  "description": "Serverless API proxy & message queue worker for TerraClimate",
+  "main": "src/server.js",
+  "type": "module",
+  "scripts": {
+    "dev": "nodemon src/server.js",
+    "start": "node src/server.js",
+    "worker": "nodemon src/workers/notification.worker.js",
+    "scanner": "nodemon src/workers/scanner.worker.js",
+    "db:generate": "prisma generate",
+    "db:migrate": "prisma migrate dev"
+  },
+  "dependencies": {
+    "@aws-sdk/client-s3": "^3.500.0",
+    "@aws-sdk/client-sqs": "^3.500.0",
+    "@aws-sdk/s3-request-presigner": "^3.500.0",
+    "@prisma/client": "^5.10.0",
+    "@vendia/serverless-express": "^4.12.1",
+    "axios": "^1.6.7",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.18.2",
+    "firebase-admin": "^12.0.0",
+    "ioredis": "^5.3.2",
+    "node-cache": "^5.1.2",
+    "nodemailer": "^9.0.3"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.3",
+    "prisma": "^5.10.0"
+  }
+}
