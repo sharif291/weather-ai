@@ -107,7 +107,6 @@ export class TerraClimateStack extends cdk.Stack {
         WEATHER_AI_API_KEY: 'your-production-weather-ai-key',
         AWS_SQS_QUEUE_URL: notificationQueue.queueUrl,
         AWS_S3_UPLOAD_BUCKET: uploadsBucket.bucketName,
-        AWS_REGION: this.region,
         // Firebase configurations will be mounted during runtime configuration/deployment stage
       },
     });
