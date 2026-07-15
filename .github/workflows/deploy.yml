@@ -17,10 +17,23 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20
-          cache: 'npm'
+          node-version: 22
+
+      - name: Cache Node Modules
+        id: node-cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            node_modules
+            backend/node_modules
+            frontend/node_modules
+            infra/node_modules
+          key: ${{ runner.os }}-node-${{ hashFiles('package-lock.json', 'backend/package-lock.json', 'frontend/package-lock.json', 'infra/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
 
       - name: Install Dependencies
+        if: steps.node-cache.outputs.cache-hit != 'true'
         run: npm run install:all
 
       - name: Configure AWS Credentials
@@ -41,11 +54,9 @@ jobs:
           OUTPUTS=$(aws cloudformation describe-stacks --stack-name TerraClimateStack --region us-east-2 --query "Stacks[0].Outputs" --output json)
           
           BUCKET=$(echo $OUTPUTS | jq -r '.[] | select(.OutputKey=="FrontendBucketName") | .OutputValue')
-          DIST_ID=$(echo $OUTPUTS | jq -r '.[] | select(.OutputKey=="CloudFrontDistributionId") | .OutputValue')
           API_URL=$(echo $OUTPUTS | jq -r '.[] | select(.OutputKey=="ApiGatewayBaseUrl") | .OutputValue')
           
           echo "BUCKET_NAME=$BUCKET" >> $GITHUB_ENV
-          echo "DISTRIBUTION_ID=$DIST_ID" >> $GITHUB_ENV
           echo "VITE_API_URL=$API_URL" >> $GITHUB_ENV
 
       - name: Build React Frontend
@@ -64,7 +75,3 @@ jobs:
       - name: Deploy to S3 Bucket
         run: |
           aws s3 sync frontend/dist s3://${{ env.BUCKET_NAME }} --delete
-
-      - name: Invalidate CloudFront Cache
-        run: |
-          aws cloudfront create-invalidation --distribution-id ${{ env.DISTRIBUTION_ID }} --paths "/*"

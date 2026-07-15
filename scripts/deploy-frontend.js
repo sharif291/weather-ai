@@ -16,25 +16,18 @@ try {
 
   const outputs = JSON.parse(outputsRaw);
   const bucketName = outputs.find(o => o.OutputKey === 'FrontendBucketName')?.OutputValue;
-  const distId = outputs.find(o => o.OutputKey === 'CloudFrontDistributionId')?.OutputValue;
 
   if (!bucketName) {
     throw new Error('FrontendBucketName stack output value is missing.');
   }
 
   console.log(`[Deploy] Found target S3 Bucket: ${bucketName}`);
-  if (distId) console.log(`[Deploy] Found CloudFront Distribution: ${distId}`);
 
   console.log('\n[Deploy] Building static assets in frontend directory...');
   execSync('npm run build', { cwd: path.join(__dirname, '../frontend'), stdio: 'inherit' });
 
   console.log(`\n[Deploy] Uploading assets to S3 bucket: s3://${bucketName}...`);
   execSync(`aws s3 sync frontend/dist s3://${bucketName} --delete`, { cwd: path.join(__dirname, '..'), stdio: 'inherit' });
-
-  if (distId) {
-    console.log(`\n[Deploy] Invalidating CloudFront cache for CDN: ${distId}...`);
-    execSync(`aws cloudfront create-invalidation --distribution-id ${distId} --paths "/*"`, { stdio: 'inherit' });
-  }
 
   console.log('\n✅ Frontend successfully deployed to AWS!');
 } catch (err) {

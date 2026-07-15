@@ -1,7 +1,5 @@
 import * as cdk from 'aws-cdk-lib';
 import * as apigateway from 'aws-cdk-lib/aws-apigateway';
-import * as cloudfront from 'aws-cdk-lib/aws-cloudfront';
-import * as origins from 'aws-cdk-lib/aws-cloudfront-origins';
 import * as lambda from 'aws-cdk-lib/aws-lambda';
 import * as s3 from 'aws-cdk-lib/aws-s3';
 import * as sqs from 'aws-cdk-lib/aws-sqs';
@@ -60,36 +58,21 @@ export class TerraClimateStack extends cdk.Stack {
     uploadsBucket.grantPublicAccess();
 
     // ----------------------------------------------------
-    // 3. FRONTEND S3 BUCKET & CLOUDFRONT CDN
+    // 3. FRONTEND S3 BUCKET WEBSITE
     // ----------------------------------------------------
     const frontendBucket = new s3.Bucket(this, 'FrontendBucket', {
       bucketName: `terraclimate-frontend-${this.account}-${this.region}`,
       removalPolicy: cdk.RemovalPolicy.DESTROY,
       autoDeleteObjects: true,
-      blockPublicAccess: s3.BlockPublicAccess.BLOCK_ALL,
-    });
-
-    const distribution = new cloudfront.Distribution(this, 'FrontendDistribution', {
-      defaultBehavior: {
-        origin: new origins.S3Origin(frontendBucket),
-        viewerProtocolPolicy: cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
-      },
-      defaultRootObject: 'index.html',
-      errorResponses: [
-        {
-          // Support clean React Router browser paths by rewriting 404/403 errors to index.html
-          httpStatus: 404,
-          responseHttpStatus: 200,
-          responsePagePath: '/index.html',
-          ttl: cdk.Duration.seconds(0),
-        },
-        {
-          httpStatus: 403,
-          responseHttpStatus: 200,
-          responsePagePath: '/index.html',
-          ttl: cdk.Duration.seconds(0),
-        },
-      ],
+      publicReadAccess: true,
+      blockPublicAccess: new s3.BlockPublicAccess({
+        blockPublicAcls: false,
+        ignorePublicAcls: false,
+        blockPublicPolicy: false,
+        restrictPublicBuckets: false,
+      }),
+      websiteIndexDocument: 'index.html',
+      websiteErrorDocument: 'index.html',
     });
 
     // ----------------------------------------------------
@@ -130,9 +113,9 @@ export class TerraClimateStack extends cdk.Stack {
     // ----------------------------------------------------
     // 5. STACK OUTPUT SUMMARY
     // ----------------------------------------------------
-    new cdk.CfnOutput(this, 'CloudFrontDistributionUrl', {
-      value: distribution.distributionDomainName,
-      description: 'The live public URL for the React static frontend distribution.',
+    new cdk.CfnOutput(this, 'FrontendWebsiteUrl', {
+      value: frontendBucket.bucketWebsiteUrl,
+      description: 'The live public URL for the React static frontend hosting.',
     });
 
     new cdk.CfnOutput(this, 'ApiGatewayBaseUrl', {
@@ -148,11 +131,6 @@ export class TerraClimateStack extends cdk.Stack {
     new cdk.CfnOutput(this, 'FrontendBucketName', {
       value: frontendBucket.bucketName,
       description: 'The S3 bucket name where the compiled React assets must be deployed.',
-    });
-
-    new cdk.CfnOutput(this, 'CloudFrontDistributionId', {
-      value: distribution.distributionId,
-      description: 'The CloudFront distribution ID for static web hosting.',
     });
   }
 }
