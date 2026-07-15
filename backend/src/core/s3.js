@@ -8,18 +8,28 @@ class S3Service {
     this.bucketName = config.aws.s3UploadBucket;
     this.isS3Active = false;
 
-    if (!config.aws.accessKeyId || !config.aws.secretAccessKey || !this.bucketName) {
-      throw new Error('[S3 Config Error] AWS S3 configuration variables (AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, AWS_S3_UPLOAD_BUCKET) are required but not configured.');
+    const isLambda = !!process.env.AWS_LAMBDA_FUNCTION_NAME;
+
+    if (!isLambda && (!config.aws.accessKeyId || !config.aws.secretAccessKey)) {
+      throw new Error('[S3 Config Error] AWS S3 configuration variables (AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY) are required for local development.');
+    }
+    if (!this.bucketName) {
+      throw new Error('[S3 Config Error] AWS_S3_UPLOAD_BUCKET is required but not configured.');
     }
 
     console.log(`[S3] Connecting to AWS S3 Client in region: ${config.aws.region}`);
-    this.s3 = new S3Client({
+    const clientOptions = {
       region: config.aws.region,
-      credentials: {
+    };
+
+    if (!isLambda) {
+      clientOptions.credentials = {
         accessKeyId: config.aws.accessKeyId,
         secretAccessKey: config.aws.secretAccessKey,
-      }
-    });
+      };
+    }
+
+    this.s3 = new S3Client(clientOptions);
     this.isS3Active = true;
   }
 

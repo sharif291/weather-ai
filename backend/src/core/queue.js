@@ -8,19 +8,29 @@ class QueueService {
     this.logs = [];
     this.isSqsActive = false;
 
-    if (!config.aws.accessKeyId || !config.aws.secretAccessKey || !this.queueUrl) {
-      throw new Error('[Queue Config Error] AWS SQS configuration variables (AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, AWS_SQS_QUEUE_URL) are required but not configured.');
+    const isLambda = !!process.env.AWS_LAMBDA_FUNCTION_NAME;
+
+    if (!isLambda && (!config.aws.accessKeyId || !config.aws.secretAccessKey)) {
+      throw new Error('[Queue Config Error] AWS SQS configuration variables (AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY) are required for local development.');
+    }
+    if (!this.queueUrl) {
+      throw new Error('[Queue Config Error] AWS_SQS_QUEUE_URL is required but not configured.');
     }
 
     console.log(`[Queue] Connecting to AWS SQS Client in region: ${config.aws.region}`);
-    this.sqs = new SQSClient({
+    const clientOptions = {
       region: config.aws.region,
       endpoint: config.aws.endpointUrlSqs || undefined,
-      credentials: {
+    };
+
+    if (!isLambda) {
+      clientOptions.credentials = {
         accessKeyId: config.aws.accessKeyId,
         secretAccessKey: config.aws.secretAccessKey,
-      }
-    });
+      };
+    }
+
+    this.sqs = new SQSClient(clientOptions);
     this.isSqsActive = true;
   }
 
