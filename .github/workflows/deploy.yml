@@ -19,22 +19,13 @@ jobs:
         with:
           node-version: 22
 
-      - name: Cache Node Modules
-        id: node-cache
-        uses: actions/cache@v4
-        with:
-          path: |
-            node_modules
-            backend/node_modules
-            frontend/node_modules
-            infra/node_modules
-          key: ${{ runner.os }}-node-${{ hashFiles('package-lock.json', 'backend/package-lock.json', 'frontend/package-lock.json', 'infra/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-node-
-
       - name: Install Dependencies
-        if: steps.node-cache.outputs.cache-hit != 'true'
         run: npm run install:all
+
+      - name: Generate Prisma Client
+        run: |
+          cd backend
+          npx prisma generate
 
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
