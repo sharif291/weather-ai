@@ -9,7 +9,7 @@ class CacheService {
     this.localCache = new Map();
 
     if (!config.redisUrl) {
-      console.warn('[Cache Warning] REDIS_URL environment variable is required but not configured. Falling back to in-memory telemetry cache.');
+      console.warn('[Cache Warning]  REDIS_URL environment variable is required but not configured. Falling back to in-memory telemetry cache.');
       return;
     }
 
