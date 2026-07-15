@@ -310,7 +310,7 @@ class WeatherService {
       });
       return res.data;
     } catch (err) {
-      console.error('[WeatherService] Failed to fetch usage limits:', err.message);
+      console.error('[WeatherService]  Failed to fetch usage limits:', err.message);
       throw err;
     }
   }
