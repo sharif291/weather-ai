@@ -3,6 +3,9 @@ import {
   getAuth, 
   signInWithEmailAndPassword, 
   createUserWithEmailAndPassword, 
+  sendPasswordResetEmail,
+  GoogleAuthProvider,
+  signInWithPopup,
   signOut, 
   onAuthStateChanged 
 } from 'firebase/auth';
@@ -44,6 +47,11 @@ export const firebaseService = {
     }),
     signIn: (email, password) => signInWithEmailAndPassword(auth, email, password),
     signUp: (email, password) => createUserWithEmailAndPassword(auth, email, password),
+    resetPassword: (email) => sendPasswordResetEmail(auth, email),
+    signInWithGoogle: () => {
+      const provider = new GoogleAuthProvider();
+      return signInWithPopup(auth, provider);
+    },
     logout: () => signOut(auth)
   },
   db: {
