@@ -18,6 +18,12 @@ const handleControllerError = (err, res, defaultMsg) => {
       message: 'WeatherAI API Key is required to access weather telemetry.' 
     });
   }
+  if (err.response?.status === 401) {
+    return res.status(401).json({
+      error: 'API_KEY_INVALID',
+      message: 'Your configured WeatherAI API Key is invalid or has been revoked. Please set up a new valid key.'
+    });
+  }
   return res.status(err.response?.status || 500).json({ 
     error: err.message, 
     details: err.response?.data || defaultMsg 
@@ -154,6 +160,12 @@ export const geocodeCity = async (req, res) => {
       return res.status(403).json({ 
         error: 'API_KEY_REQUIRED', 
         message: 'WeatherAI API Key is required to geocode city locations.' 
+      });
+    }
+    if (err.response?.status === 401) {
+      return res.status(401).json({
+        error: 'API_KEY_INVALID',
+        message: 'Your configured WeatherAI API Key is invalid or has been revoked. Please set up a new valid key.'
       });
     }
     console.error('[Geocoding] Resolution failure:', err.message);

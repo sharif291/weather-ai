@@ -99,6 +99,14 @@ export default function App() {
   const { currentWeather, forecast, hourly, loading: weatherLoading, error: weatherError } = useWeather(activeWeatherQuery);
   const { notifications, globalAlert, newToast, clearToast, clearGlobalAlert } = useRealtimeAlerts(user);
 
+  // Invalidate configuration if the database key gets revoked (WeatherAI returns 401 API_KEY_INVALID)
+  useEffect(() => {
+    if (weatherError === 'API_KEY_INVALID') {
+      setWeatherApiKey('');
+      setAuthError('Your configured WeatherAI API Key is invalid or has been revoked. Please set up a new valid key.');
+    }
+  }, [weatherError]);
+
   // Sync Auth State and Fetch Location
   useEffect(() => {
     const unsubscribe = firebaseService.auth.onAuthStateChanged(async (currentUser) => {
@@ -742,14 +750,20 @@ export default function App() {
                 e.preventDefault();
                 const keyInput = e.target.elements.apiKeyInput.value.trim();
                 if (!keyInput) return;
+                setAuthError(null);
                 try {
                   await apiService.updateApiKey(keyInput);
                   setWeatherApiKey(keyInput);
                   window.location.reload()
                 } catch (err) {
-                  alert(`Failed to configure account: ${err.message}`);
+                  setAuthError(err.response?.data?.message || err.message);
                 }
               }} className="space-y-4 text-left">
+                {authError && (
+                  <div className="p-3.5 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-400 text-[11px] leading-relaxed font-semibold">
+                    ⚠️ {authError}
+                  </div>
+                )}
                 <div className="space-y-1">
                   <label className="text-[10px] text-slate-500 uppercase font-bold tracking-wider">Your API Key</label>
                   <input 

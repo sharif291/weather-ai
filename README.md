@@ -10,17 +10,49 @@ It translates raw micro-climate weather feeds from the WeatherAI API into locali
 
 ```mermaid
 graph TD
-    A[React Client - S3/CloudFront] -->|1. Sign-In / Google SSO / Reset Email| B[Firebase Auth]
-    A -->|2. Saves Farms & Crop Profiles| C[PostgreSQL Database]
-    A -->|3. Fetches Weather & Uploads Maps| D[Node.js Proxy API - Lambda/API Gateway]
-    D -->|4. Checks Server Cache| E[Redis Cache / Upstash]
-    D -->|5. Enqueues Warning Tasks| F[AWS SQS Queue]
-    D -->|6. Generates Upload URLs| G[AWS S3 Uploads Bucket]
-    H[Serverless Worker - AWS Lambda] -->|7. Polls SQS Queue Tasks| F
-    H -->|8. Writes Realtime Notification| I[Cloud Firestore /alerts]
-    I -->|9. Syncs Alerts Instantly| A
-    J[Scheduler - EventBridge / Lambda] -->|10. Queries active farms & checks keys| C
-    J -->|11. Enqueues alerts| F
+    subgraph Client Space
+        A[React Client - S3/CloudFront]
+    end
+
+    subgraph Authentication & Realtime
+        B[Firebase Auth]
+        I[Cloud Firestore]
+    end
+
+    subgraph API Gateway & Compute
+        D[Node.js Proxy API - API Gateway/Lambda]
+        H[Serverless Worker - AWS Lambda]
+        J[Scheduler - EventBridge/Lambda]
+    end
+
+    subgraph Data & Queue Layers
+        C[PostgreSQL Database - Neon]
+        E[Redis Cache - Upstash]
+        F[AWS SQS Queue]
+        G[AWS S3 Uploads Bucket]
+    end
+
+    subgraph Integrations
+        K[External APIs - WeatherAI, Twilio, SMTP, Discord]
+    end
+
+    A -->|1. Authenticates| B
+    A -->|2. HTTP Requests - CRUD, Geo| D
+    D -->|3. Verifies Tokens| B
+    D -->|4. Queries & Syncs Profiles/Farms| C
+    D -->|5. Checks Cache| E
+    D -->|6. Resolves Cache Misses| K
+    D -->|7. Generates Presigned URLs| G
+    A -->|8. Uploads Blueprints Directly| G
+    
+    J -->|9. Scans Farms & Keys| C
+    J -->|10. Evaluates Thresholds| K
+    J -->|11. Enqueues Warning Tasks| F
+    
+    F -->|12. Triggers SQS Message Events| H
+    H -->|13. Writes Realtime Logs| I
+    H -->|14. Dispatches SMS / Email / Discord Alerts| K
+    I -->|15. Syncs Alerts Instantly| A
 ```
 
 ---
@@ -77,20 +109,7 @@ To safeguard the application from scale limits and ensure high availability:
 
 ## ⚙️ Environmental Setup
 
-To run the application, configure environment files in both folders. Copy the templates:
-
-*   **Backend (`backend/.env`)**: Follow [backend/.env.example](file:///Users/sharifhossain/Documents/Personal/assesment/weather-ai/backend/.env.example)
-*   **Frontend (`frontend/.env`)**:
-    ```env
-    VITE_API_URL="http://localhost:3000"
-    VITE_FIREBASE_API_KEY="your-firebase-api-key"
-    VITE_FIREBASE_AUTH_DOMAIN="your-firebase-auth-domain"
-    VITE_FIREBASE_PROJECT_ID="your-firebase-project-id"
-    VITE_FIREBASE_STORAGE_BUCKET="your-firebase-storage-bucket"
-    VITE_FIREBASE_SENDER_ID="your-firebase-sender-id"
-    VITE_FIREBASE_APP_ID="your-firebase-app-id"
-    ```
-    *Note: All environment keys must be filled out for the frontend to communicate with your backend and database services correctly.*
+To run the application, configure environment files in both folders.
 
 ---
 
