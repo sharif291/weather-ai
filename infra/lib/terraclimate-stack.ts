@@ -129,7 +129,7 @@ export class TerraClimateStack extends cdk.Stack {
     const notificationWorkerLambda = new lambda.Function(this, 'NotificationWorkerLambda', {
       functionName: 'terraclimate-notification-worker',
       runtime: lambda.Runtime.NODEJS_20_X,
-      handler: 'src/handlers/notification.handler.handler',
+      handler: 'src/handlers/notification-handler.handler',
       code: lambda.Code.fromAsset('../backend'),
       timeout: cdk.Duration.seconds(60),
       memorySize: 512,
@@ -162,7 +162,7 @@ export class TerraClimateStack extends cdk.Stack {
     const scannerWorkerLambda = new lambda.Function(this, 'ScannerWorkerLambda', {
       functionName: 'terraclimate-scanner-worker',
       runtime: lambda.Runtime.NODEJS_20_X,
-      handler: 'src/handlers/scanner.handler.handler',
+      handler: 'src/handlers/scanner-handler.handler',
       code: lambda.Code.fromAsset('../backend'),
       timeout: cdk.Duration.seconds(300), // 5 minutes timeout for scanning all farms
       memorySize: 512,
