@@ -134,6 +134,16 @@ export const apiService = {
   getIpLookup: async () => {
     const res = await api.get('/api/weather/ip-lookup');
     return res.data;
+  },
+
+  updateApiKey: async (weatherApiKey) => {
+    const res = await api.put('/api/weather/api-key', { weatherApiKey });
+    return res.data;
+  },
+
+  getApiKey: async () => {
+    const res = await api.get('/api/weather/api-key');
+    return res.data;
   }
 };
 

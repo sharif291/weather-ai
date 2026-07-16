@@ -9,11 +9,12 @@ generator client {
 }
 
 model User {
-  id        String   @id // Matches Firebase Auth UID
-  email     String   @unique
-  name      String?
-  createdAt DateTime @default(now())
-  farms     Farm[]
+  id            String   @id // Matches Firebase Auth UID
+  email         String   @unique
+  name          String?
+  weatherApiKey String?
+  createdAt     DateTime @default(now())
+  farms         Farm[]
 }
 
 model Farm {

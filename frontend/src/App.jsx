@@ -11,6 +11,7 @@ import {
   FiMenu,
   FiPlus,
   FiSearch,
+  FiSettings,
   FiUser,
   FiX
 } from 'react-icons/fi';
@@ -23,6 +24,7 @@ import { apiService } from './services/api.js';
 import { firebaseService } from './services/firebase.js';
 import AgriTimeline from './views/AgriTimeline.jsx';
 import FarmPlanner from './views/FarmPlanner.jsx';
+import SettingsDrawer from './views/SettingsDrawer.jsx';
 
 export default function App() {
   const [user, setUser] = useState(null);
@@ -90,6 +92,8 @@ export default function App() {
   const [isNotificationOpen, setIsNotificationOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [weatherApiKey, setWeatherApiKey] = useState(null);
   // Custom Data Hooks
   const { farms, addFarm, removeFarm, updateFarm, refetch: refetchFarms } = useFarms(user);
   const { currentWeather, forecast, hourly, loading: weatherLoading, error: weatherError } = useWeather(activeWeatherQuery);
@@ -118,6 +122,24 @@ export default function App() {
     });
     return () => unsubscribe();
   }, []);
+
+  // Sync user's WeatherAI API Key config from database
+  useEffect(() => {
+    const fetchApiKey = async () => {
+      if (user) {
+        try {
+          const res = await apiService.getApiKey();
+          setWeatherApiKey(res.weatherApiKey || '');
+        } catch (err) {
+          console.warn('[API Key Check] Failed to check user key:', err.message);
+          setWeatherApiKey('');
+        }
+      } else {
+        setWeatherApiKey(null);
+      }
+    };
+    fetchApiKey();
+  }, [user]);
 
   // Update weather query when selected farm changes
   useEffect(() => {
@@ -506,6 +528,16 @@ export default function App() {
             )}
           </button>
           <button 
+            onClick={() => {
+              setIsSettingsOpen(true);
+              setIsMobileMenuOpen(false);
+            }}
+            className="p-2 rounded-lg bg-slate-900 border border-slate-800 text-slate-400 hover:text-emerald-400 transition-all cursor-pointer"
+            title="Diagnostics"
+          >
+            <FiSettings className="w-4 h-4" />
+          </button>
+          <button 
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
             className="p-2 rounded-lg bg-slate-900 border border-slate-800 text-slate-400 hover:text-emerald-400 transition-all cursor-pointer"
           >
@@ -534,17 +566,26 @@ export default function App() {
             <span className="text-xl">🌱</span>
             <h1 className="text-lg font-black text-white tracking-tight">TerraClimate</h1>
           </div>
-          <button 
-            onClick={() => setIsNotificationOpen(true)}
-            className="p-2 rounded-lg bg-slate-900 border border-slate-800 text-slate-400 hover:text-emerald-400 hover:border-emerald-500/20 transition-all cursor-pointer relative"
-          >
-            <FiBell className="w-4 h-4" />
-            {notifications.filter(n => !n.read).length > 0 && (
-              <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-rose-500 text-[8px] font-bold text-white ring-2 ring-slate-950 animate-pulse">
-                {notifications.filter(n => !n.read).length}
-              </span>
-            )}
-          </button>
+          <div className="flex items-center space-x-2">
+            <button 
+              onClick={() => setIsNotificationOpen(true)}
+              className="p-2 rounded-lg bg-slate-900 border border-slate-800 text-slate-400 hover:text-emerald-400 hover:border-emerald-500/20 transition-all cursor-pointer relative"
+            >
+              <FiBell className="w-4 h-4" />
+              {notifications.filter(n => !n.read).length > 0 && (
+                <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-rose-500 text-[8px] font-bold text-white ring-2 ring-slate-950 animate-pulse">
+                  {notifications.filter(n => !n.read).length}
+                </span>
+              )}
+            </button>
+            <button 
+              onClick={() => setIsSettingsOpen(true)}
+              className="p-2 rounded-lg bg-slate-900 border border-slate-800 text-slate-400 hover:text-emerald-400 hover:border-emerald-500/20 transition-all cursor-pointer"
+              title="Diagnostics"
+            >
+              <FiSettings className="w-4 h-4" />
+            </button>
+          </div>
         </div>
 
         {/* Search Bar */}
@@ -627,7 +668,52 @@ export default function App() {
       </aside>
 
       {/* 2. MAIN CONTENT SPACE */}
-      <main className="flex-1 overflow-y-auto p-2 md:p-8 space-y-6">
+      <main className="relative flex-1 overflow-y-auto p-2 md:p-8 space-y-6">
+        {weatherApiKey === "" ? (
+          <div className="absolute inset-0 bg-slate-950/80 backdrop-blur-md z-30 flex items-center justify-center p-6">
+            <div className="max-w-md w-full glass-panel p-8 rounded-2xl border-slate-900 text-center space-y-6 animate-slide-in">
+              <div className="w-16 h-16 bg-emerald-500/10 text-emerald-400 rounded-2xl flex items-center justify-center mx-auto text-2xl">
+                🔑
+              </div>
+              <div className="space-y-2">
+                <h3 className="text-lg font-bold text-white">WeatherAI API Key Required</h3>
+                <p className="text-xs text-slate-400 leading-relaxed">
+                  Welcome to TerraClimate! To unlock precision climate telemetry, hourly analytics, and automated advisory scans, please configure your personal WeatherAI API Key.
+                </p>
+              </div>
+
+              <form onSubmit={async (e) => {
+                e.preventDefault();
+                const keyInput = e.target.elements.apiKeyInput.value.trim();
+                if (!keyInput) return;
+                try {
+                  await apiService.updateApiKey(keyInput);
+                  setWeatherApiKey(keyInput);
+                  alert('Account configured successfully! Loading precision agricultural dashboards...');
+                } catch (err) {
+                  alert(`Failed to configure account: ${err.message}`);
+                }
+              }} className="space-y-4 text-left">
+                <div className="space-y-1">
+                  <label className="text-[10px] text-slate-500 uppercase font-bold tracking-wider">Your API Key</label>
+                  <input 
+                    name="apiKeyInput"
+                    type="password"
+                    placeholder="Enter key (e.g. wai_live_...)"
+                    className="w-full px-3.5 py-2.5 rounded-xl text-xs glass-input text-slate-300 font-mono"
+                    required
+                  />
+                </div>
+                <button 
+                  type="submit"
+                  className="w-full py-3 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-slate-950 text-xs font-black transition-all cursor-pointer"
+                >
+                  Configure Account
+                </button>
+              </form>
+            </div>
+          </div>
+        ) : null}
         {/* Navigation Tabs */}
         <div className="flex items-center justify-between border-b border-slate-900 pb-4">
           <div className="flex space-x-1">
@@ -1340,6 +1426,14 @@ export default function App() {
         </div>
       )}
 
+      {/* Settings / Telemetry Drawer */}
+      <SettingsDrawer 
+        isOpen={isSettingsOpen}
+        onClose={() => setIsSettingsOpen(false)}
+        user={user}
+        farmsCount={farms.length}
+        onKeyUpdate={(newKey) => setWeatherApiKey(newKey)}
+      />
     </div>
   );
 }

@@ -75,23 +75,17 @@ class WeatherService {
     });
   }
 
-  getHeaders() {
-    return {
-      Authorization: `Bearer ${config.weatherAiApiKey}`,
-      'Content-Type': 'application/json'
-    };
-  }
-
-  async fetchWithProxy(endpoint, queryParams, cacheKey) {
+  async fetchWithProxy(endpoint, queryParams, cacheKey, apiKey) {
     // 1. Check cache first
     const cachedData = await cacheService.get(cacheKey);
     if (cachedData) {
-        console.log(`[WeatherService-cached] Outbound HTTP Request: ${endpoint} for params:`, queryParams);
+      console.log(`[WeatherService-cached] Outbound HTTP Request: ${endpoint} for params:`, queryParams);
       return cachedData;
     }
 
-    if (!config.weatherAiApiKey || config.weatherAiApiKey === 'your_weather_ai_api_key_here') {
-      throw new Error('[WeatherService] WEATHER_AI_API_KEY is not configured or left at default.');
+    const key = apiKey || config.weatherAiApiKey;
+    if (!key || key === 'your_weather_ai_api_key_here') {
+      throw new Error('KEY_REQUIRED');
     }
 
     // 2. Queue & Throttle HTTP requests to protect 5 req/sec rate limit
@@ -100,9 +94,12 @@ class WeatherService {
         console.log(`[WeatherService] Outbound HTTP Request: ${endpoint} for params:`, queryParams);
         const res = await this.client.get(endpoint, {
           params: queryParams,
-          headers: this.getHeaders()
+          headers: {
+            Authorization: `Bearer ${key}`,
+            'Content-Type': 'application/json'
+          }
         });
-        console.log("res.data",res.data)
+        console.log("res.data", res.data);
         return res.data;
       });
 
@@ -116,7 +113,7 @@ class WeatherService {
     }
   }
 
-  async getCurrent(query) {
+  async getCurrent(query, apiKey) {
     const q = query || 'Nairobi';
     const parsed = parseQuery(q);
     
@@ -124,11 +121,11 @@ class WeatherService {
     if (parsed.isCoords) {
       const { lat, lon } = parsed;
       const cacheKey = `weather:current:lat:${lat}:lon:${lon}`;
-      data = await this.fetchWithProxy('/v1/current', { lat, lon }, cacheKey);
+      data = await this.fetchWithProxy('/v1/current', { lat, lon }, cacheKey, apiKey);
     } else {
       const { city } = parsed;
       const cacheKey = `weather:geo:city:${city}`;
-      data = await this.fetchWithProxy('/v1/weather-geo', { city }, cacheKey);
+      data = await this.fetchWithProxy('/v1/weather-geo', { city }, cacheKey, apiKey);
     }
 
     const cond = getWmoCondition(data.current?.weathercode);
@@ -149,7 +146,7 @@ class WeatherService {
     };
   }
 
-  async getForecast(query) {
+  async getForecast(query, apiKey) {
     const q = query || 'Nairobi';
     const parsed = parseQuery(q);
     
@@ -157,11 +154,11 @@ class WeatherService {
     if (parsed.isCoords) {
       const { lat, lon } = parsed;
       const cacheKey = `weather:forecast:lat:${lat}:lon:${lon}`;
-      data = await this.fetchWithProxy('/v1/forecast', { lat, lon }, cacheKey);
+      data = await this.fetchWithProxy('/v1/forecast', { lat, lon }, cacheKey, apiKey);
     } else {
       const { city } = parsed;
       const cacheKey = `weather:geo:city:${city}`;
-      data = await this.fetchWithProxy('/v1/weather-geo', { city }, cacheKey);
+      data = await this.fetchWithProxy('/v1/weather-geo', { city }, cacheKey, apiKey);
     }
 
     const rawDays = data.daily || (data.forecast?.forecastday ? data.forecast.forecastday.map(item => ({
@@ -199,7 +196,7 @@ class WeatherService {
     };
   }
 
-  async getHourly(query) {
+  async getHourly(query, apiKey) {
     const q = query || 'Nairobi';
     const parsed = parseQuery(q);
     
@@ -207,11 +204,11 @@ class WeatherService {
     if (parsed.isCoords) {
       const { lat, lon } = parsed;
       const cacheKey = `weather:hourly:lat:${lat}:lon:${lon}`;
-      data = await this.fetchWithProxy('/v1/hourly', { lat, lon }, cacheKey);
+      data = await this.fetchWithProxy('/v1/hourly', { lat, lon }, cacheKey, apiKey);
     } else {
       const { city } = parsed;
       const cacheKey = `weather:geo:city:${city}`;
-      data = await this.fetchWithProxy('/v1/weather-geo', { city }, cacheKey);
+      data = await this.fetchWithProxy('/v1/weather-geo', { city }, cacheKey, apiKey);
     }
 
     const rawHourly = data.hourly || [];
@@ -237,7 +234,7 @@ class WeatherService {
     };
   }
 
-  async getDaily(query, date) {
+  async getDaily(query, date, apiKey) {
     const q = query || 'Nairobi';
     const d = date || new Date().toISOString().split('T')[0];
     const parsed = parseQuery(q);
@@ -246,11 +243,11 @@ class WeatherService {
     if (parsed.isCoords) {
       const { lat, lon } = parsed;
       const cacheKey = `weather:daily:lat:${lat}:lon:${lon}:date:${d}`;
-      data = await this.fetchWithProxy('/v1/daily', { lat, lon, date: d }, cacheKey);
+      data = await this.fetchWithProxy('/v1/daily', { lat, lon, date: d }, cacheKey, apiKey);
     } else {
       const { city } = parsed;
       const cacheKey = `weather:geo:city:${city}:date:${d}`;
-      data = await this.fetchWithProxy('/v1/weather-geo', { city, date: d }, cacheKey);
+      data = await this.fetchWithProxy('/v1/weather-geo', { city, date: d }, cacheKey, apiKey);
     }
 
     const dayItem = data.daily && data.daily.length > 0 ? data.daily[0] : (data.day || data);
@@ -273,12 +270,13 @@ class WeatherService {
     };
   }
 
-  async getWeatherGeo(lat, lon) {
+  async getWeatherGeo(lat, lon, apiKey) {
     const cacheKey = `weather:geo:lat:${lat}:lon:${lon}`;
     const data = await this.fetchWithProxy(
       '/v1/weather-geo',
       { lat, lon },
-      cacheKey
+      cacheKey,
+      apiKey
     );
 
     const cond = getWmoCondition(data.current?.weathercode);
@@ -299,28 +297,33 @@ class WeatherService {
     };
   }
 
-  async getUsage() {
-    if (!config.weatherAiApiKey || config.weatherAiApiKey === 'your_weather_ai_api_key_here') {
-      throw new Error('[WeatherService] WEATHER_AI_API_KEY is not configured or left at default.');
+  async getUsage(apiKey) {
+    const key = apiKey || config.weatherAiApiKey;
+    if (!key || key === 'your_weather_ai_api_key_here') {
+      throw new Error('KEY_REQUIRED');
     }
 
     try {
       const res = await this.client.get('/v1/usage', {
-        headers: this.getHeaders()
+        headers: {
+          Authorization: `Bearer ${key}`,
+          'Content-Type': 'application/json'
+        }
       });
       return res.data;
     } catch (err) {
-      console.error('[WeatherService]  Failed to fetch usage limits:', err.message);
+      console.error('[WeatherService] Failed to fetch usage limits:', err.message);
       throw err;
     }
   }
 
-  async getIpLookup(ip) {
+  async getIpLookup(ip, apiKey) {
     const cacheKey = `weather:ip:${ip}`;
     return this.fetchWithProxy(
       '/v1/ip-lookup',
       { ip },
-      cacheKey
+      cacheKey,
+      apiKey
     );
   }
 }

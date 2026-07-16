@@ -8,15 +8,21 @@ const evaluateFarmAlerts = async (farm) => {
     return;
   }
 
+  const apiKey = farm.user?.weatherApiKey;
+  if (!apiKey) {
+    console.log(`[ScannerHandler] Farm owner ${farm.userId} has not configured their WeatherAI API Key. Skipping forecast advisory scans.`);
+    return;
+  }
+
   const coordStr = `${farm.latitude},${farm.longitude}`;
 
   try {
     // 1. Fetch current weather for wind speed checks
-    const currentData = await weatherService.getCurrent(coordStr);
+    const currentData = await weatherService.getCurrent(coordStr, apiKey);
     const windSpeed = currentData?.current?.wind_kph || 0;
 
     // 2. Fetch forecast data for cumulative daily precipitation checks
-    const forecastData = await weatherService.getForecast(coordStr);
+    const forecastData = await weatherService.getForecast(coordStr, apiKey);
     const rainLevel = forecastData?.forecast?.forecastday?.[0]?.day?.totalprecip_mm || 0;
 
     const todayStart = new Date();
@@ -86,7 +92,7 @@ export const handler = async (event) => {
 
   try {
     const farms = await prisma.farm.findMany({
-      include: { alertConfig: true }
+      include: { alertConfig: true, user: true }
     });
 
     console.log(`[ScannerHandler] Found ${farms.length} farms to evaluate.`);
