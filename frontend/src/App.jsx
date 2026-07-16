@@ -564,7 +564,7 @@ export default function App() {
   // MAIN DASHBOARD LAYOUT
   // ----------------------------------------------------
   return (
-    <div className="min-h-screen bg-slate-950 flex flex-col md:flex-row select-none">
+    <div className="min-h-screen bg-slate-950 flex flex-col md:flex-row">
       {/* Real-time Alerts Layer */}
       <NotificationToast 
         toast={newToast}

@@ -91,7 +91,7 @@ export const SettingsDrawer = ({ isOpen, onClose, user, farmsCount, onKeyUpdate 
     : 'Unknown';
 
   return (
-    <div className="fixed inset-y-0 right-0 z-40 w-96 bg-slate-950/95 border-l border-slate-900 backdrop-blur-md shadow-2xl flex flex-col h-full animate-slide-in select-none">
+    <div className="fixed inset-y-0 right-0 z-40 w-96 bg-slate-950/95 border-l border-slate-900 backdrop-blur-md shadow-2xl flex flex-col h-full animate-slide-in">
       {/* Drawer Header */}
       <div className="p-5 border-b border-slate-900 flex items-center justify-between">
         <div className="flex items-center space-x-2 text-emerald-400">
