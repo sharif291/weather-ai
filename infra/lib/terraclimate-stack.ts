@@ -14,6 +14,9 @@ export class TerraClimateStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
 
+    // Node.js 22.x Runtime for Lambda Functions
+    const nodeRuntime = new lambda.Runtime('nodejs22.x', lambda.RuntimeFamily.NODEJS);
+
     // ----------------------------------------------------
     // 1. SQS MESSAGE BROKER (QUEUE)
     // ----------------------------------------------------
@@ -85,7 +88,7 @@ export class TerraClimateStack extends cdk.Stack {
     // ----------------------------------------------------
     const apiLambda = new lambda.Function(this, 'ExpressApiLambda', {
       functionName: 'terraclimate-api-handler',
-      runtime: lambda.Runtime.NODEJS_20_X,
+      runtime: nodeRuntime,
       handler: 'src/lambda.handler',
       code: lambda.Code.fromAsset('../backend'),
       timeout: cdk.Duration.seconds(30),
@@ -130,7 +133,7 @@ export class TerraClimateStack extends cdk.Stack {
     // 1. Notification SQS Worker Lambda
     const notificationWorkerLambda = new lambda.Function(this, 'NotificationWorkerLambda', {
       functionName: 'terraclimate-notification-worker',
-      runtime: lambda.Runtime.NODEJS_20_X,
+      runtime: nodeRuntime,
       handler: 'src/handlers/notification-handler.handler',
       code: lambda.Code.fromAsset('../backend'),
       timeout: cdk.Duration.seconds(60),
@@ -163,7 +166,7 @@ export class TerraClimateStack extends cdk.Stack {
     // 2. Advisory Scanner EventBridge Worker Lambda
     const scannerWorkerLambda = new lambda.Function(this, 'ScannerWorkerLambda', {
       functionName: 'terraclimate-scanner-worker',
-      runtime: lambda.Runtime.NODEJS_20_X,
+      runtime: nodeRuntime,
       handler: 'src/handlers/scanner-handler.handler',
       code: lambda.Code.fromAsset('../backend'),
       timeout: cdk.Duration.seconds(300), // 5 minutes timeout for scanning all farms
