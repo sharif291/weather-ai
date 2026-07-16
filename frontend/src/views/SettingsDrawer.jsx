@@ -1,6 +1,10 @@
-import React, { useState, useEffect } from 'react';
-import { 
-  FiX, FiKey, FiUser, FiActivity, FiRefreshCw, FiSettings 
+import { useEffect, useState } from 'react';
+import {
+  FiActivity,
+  FiKey,
+  FiRefreshCw, FiSettings,
+  FiUser,
+  FiX
 } from 'react-icons/fi';
 import { apiService } from '../services/api.js';
 
@@ -50,7 +54,7 @@ export const SettingsDrawer = ({ isOpen, onClose, user, farmsCount, onKeyUpdate 
     e.preventDefault();
     try {
       await apiService.updateApiKey(apiKey);
-      alert('API Key updated successfully! Reloading cache data...');
+      window.location.reload();
       if (onKeyUpdate) {
         onKeyUpdate(apiKey);
       }

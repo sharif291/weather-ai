@@ -745,7 +745,7 @@ export default function App() {
                 try {
                   await apiService.updateApiKey(keyInput);
                   setWeatherApiKey(keyInput);
-                  alert('Account configured successfully! Loading precision agricultural dashboards...');
+                  window.location.reload()
                 } catch (err) {
                   alert(`Failed to configure account: ${err.message}`);
                 }
