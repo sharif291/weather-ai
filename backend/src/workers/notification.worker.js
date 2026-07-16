@@ -29,6 +29,8 @@ const runWorker = async () => {
         };
         console.log(`[Worker] Received task [ID: ${msg.messageId}]. Dequeuing to handler...`);
         await handler(event);
+        await queueService.delete(msg.receiptHandle);
+        console.log(`[Worker] Task [ID: ${msg.messageId}] successfully processed and deleted.`);
       } else {
         // Sleep when queue is empty to prevent processor spikes
         await new Promise((resolve) => setTimeout(resolve, SLEEP_TIME_MS));

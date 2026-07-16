@@ -1,10 +1,14 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import L from 'leaflet';
 
 export const MapPicker = ({ lat, lon, onChange }) => {
   const mapContainerRef = useRef(null);
   const mapRef = useRef(null);
   const markerRef = useRef(null);
+
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchLoading, setSearchLoading] = useState(false);
+  const [searchError, setSearchError] = useState(null);
 
   useEffect(() => {
     if (!mapContainerRef.current) return;
@@ -18,7 +22,7 @@ export const MapPicker = ({ lat, lon, onChange }) => {
     });
 
     // Default center
-    const defaultLat = lat ? parseFloat(lat) : 23.8103; // Default coordinates (Dhaka/Bangladesh or user loc)
+    const defaultLat = lat ? parseFloat(lat) : 23.8103; // Default coordinates (Dhaka/Bangladesh)
     const defaultLon = lon ? parseFloat(lon) : 90.4125;
 
     // Initialize map
@@ -72,8 +76,61 @@ export const MapPicker = ({ lat, lon, onChange }) => {
     }
   }, [lat, lon]);
 
+  // Handle Nominatim search lookup
+  const handleMapSearch = async (e) => {
+    e.preventDefault();
+    if (!searchQuery.trim()) return;
+
+    setSearchLoading(true);
+    setSearchError(null);
+    try {
+      const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(searchQuery)}`);
+      const results = await res.json();
+      
+      if (results && results.length > 0) {
+        const first = results[0];
+        const newLat = parseFloat(first.lat);
+        const newLon = parseFloat(first.lon);
+        
+        if (mapRef.current && markerRef.current) {
+          markerRef.current.setLatLng([newLat, newLon]);
+          mapRef.current.setView([newLat, newLon], 13);
+        }
+        onChange(newLat.toFixed(6), newLon.toFixed(6));
+      } else {
+        setSearchError('Location not found. Please refine your query.');
+      }
+    } catch (err) {
+      console.warn('[MapSearch] Error:', err.message);
+      setSearchError('Failed to contact search service. Please try again.');
+    } finally {
+      setSearchLoading(false);
+    }
+  };
+
   return (
-    <div className="space-y-1">
+    <div className="space-y-2">
+      <form onSubmit={handleMapSearch} className="flex gap-2">
+        <input
+          type="text"
+          placeholder="Search coordinates on map (e.g. Nairobi)..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          className="flex-1 px-3.5 py-2 rounded-xl text-xs glass-input text-slate-300 font-medium"
+        />
+        <button
+          type="submit"
+          disabled={searchLoading}
+          className="px-4 py-2 rounded-xl bg-slate-800 border border-slate-700 hover:bg-slate-700 text-white text-xs font-bold transition-all cursor-pointer disabled:opacity-50"
+        >
+          {searchLoading ? 'Searching...' : 'Search'}
+        </button>
+      </form>
+
+      {searchError && (
+        <p className="text-[10px] text-rose-400 font-semibold italic">{searchError}</p>
+      )}
+
       <div 
         ref={mapContainerRef} 
         className="w-full h-44 rounded-xl border border-slate-800 shadow bg-slate-950 overflow-hidden"

@@ -99,7 +99,6 @@ class WeatherService {
             'Content-Type': 'application/json'
           }
         });
-        console.log("res.data", res.data);
         return res.data;
       });
 
