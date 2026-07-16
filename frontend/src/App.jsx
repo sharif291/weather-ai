@@ -25,6 +25,7 @@ import { firebaseService } from './services/firebase.js';
 import AgriTimeline from './views/AgriTimeline.jsx';
 import FarmPlanner from './views/FarmPlanner.jsx';
 import SettingsDrawer from './views/SettingsDrawer.jsx';
+import MapPicker from './components/MapPicker.jsx';
 
 export default function App() {
   const [user, setUser] = useState(null);
@@ -47,6 +48,7 @@ export default function App() {
   const [newGeocodeError, setNewGeocodeError] = useState(null);
   const [newFarmLat, setNewFarmLat] = useState('');
   const [newFarmLon, setNewFarmLon] = useState('');
+  const [showAddFarmMap, setShowAddFarmMap] = useState(false);
   const [newFarmRegion, setNewFarmRegion] = useState('');
   const [newFarmCountry, setNewFarmCountry] = useState('');
   const [newFarmTimezone, setNewFarmTimezone] = useState('');
@@ -256,6 +258,7 @@ export default function App() {
       });
       setSelectedFarm(newFarmObj);
       setIsAddFarmOpen(false);
+      setShowAddFarmMap(false);
       // Reset form
       setNewFarmName('');
       setNewFarmCity('');
@@ -854,7 +857,10 @@ export default function App() {
           <div className="w-full max-w-lg max-h-[90vh] overflow-y-auto bg-slate-900/90 border border-slate-900 rounded-3xl p-6 shadow-2xl space-y-5 animate-slide-in relative terminal-scrollbar">
             
             <button 
-              onClick={() => setIsAddFarmOpen(false)}
+              onClick={() => {
+                setIsAddFarmOpen(false);
+                setShowAddFarmMap(false);
+              }}
               className="absolute right-4 top-4 text-slate-500 hover:text-slate-200 p-1 rounded-md hover:bg-white/5 transition-all"
             >
               <FiX className="w-5 h-5" />
@@ -905,6 +911,30 @@ export default function App() {
                     <p className="text-[10px] text-rose-400 font-semibold tracking-wide mt-0.5">{newGeocodeError}</p>
                   )}
                 </div>
+
+                <div className="col-span-2 flex items-center justify-between mt-1">
+                  <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Interactive Map Picker</span>
+                  <button
+                    type="button"
+                    onClick={() => setShowAddFarmMap(!showAddFarmMap)}
+                    className="px-3 py-1.5 rounded-xl bg-slate-800 border border-slate-700 text-[10px] text-slate-300 font-bold hover:bg-slate-700 hover:text-white transition-all cursor-pointer"
+                  >
+                    {showAddFarmMap ? 'Hide Map Picker' : 'Show Map Picker'}
+                  </button>
+                </div>
+
+                {showAddFarmMap && (
+                  <div className="col-span-2 py-1">
+                    <MapPicker 
+                      lat={newFarmLat}
+                      lon={newFarmLon}
+                      onChange={(lat, lon) => {
+                        setNewFarmLat(lat);
+                        setNewFarmLon(lon);
+                      }}
+                    />
+                  </div>
+                )}
 
                 <div className="space-y-1.5">
                   <label className="text-[10px] text-slate-400 uppercase font-bold tracking-wider">Latitude</label>
@@ -1111,7 +1141,10 @@ export default function App() {
               <div className="flex justify-end gap-3 border-t border-slate-900 pt-4 mt-2">
                 <button 
                   type="button"
-                  onClick={() => setIsAddFarmOpen(false)}
+                  onClick={() => {
+                    setIsAddFarmOpen(false);
+                    setShowAddFarmMap(false);
+                  }}
                   className="px-4 py-2 rounded-xl border border-slate-800 text-slate-400 hover:text-slate-200 text-xs font-semibold cursor-pointer"
                 >
                   Cancel
