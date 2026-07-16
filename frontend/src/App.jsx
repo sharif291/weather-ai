@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { 
   FiMapPin, FiCompass, FiPlus, FiCpu, FiLogOut, 
   FiSearch, FiLock, FiMail, FiUser, FiActivity, FiX, FiAlertCircle,
-  FiBell, FiCheck, FiCheckCircle
+  FiBell, FiCheck, FiCheckCircle, FiMenu
 } from 'react-icons/fi';
 import { firebaseService } from './services/firebase.js';
 import { apiService } from './services/api.js';
@@ -78,6 +78,8 @@ export default function App() {
   const [editFarmNotifyInApp, setEditFarmNotifyInApp] = useState(true);
   const [updatingFarm, setUpdatingFarm] = useState(false);
   const [isNotificationOpen, setIsNotificationOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   // Custom Data Hooks
   const { farms, addFarm, removeFarm, updateFarm, refetch: refetchFarms } = useFarms(user);
   const { currentWeather, forecast, hourly, loading: weatherLoading, error: weatherError } = useWeather(activeWeatherQuery);
@@ -121,6 +123,15 @@ export default function App() {
       setSelectedFarm(farms[0]);
     }
   }, [farms, selectedFarm]);
+
+  const handleSearchSubmit = (e) => {
+    e.preventDefault();
+    if (searchQuery.trim()) {
+      setActiveWeatherQuery(searchQuery.trim());
+      setSelectedFarm(null);
+      setIsMobileMenuOpen(false);
+    }
+  };
 
   // Auth Action Handlers
   const handleSignIn = async (e) => {
@@ -466,10 +477,49 @@ export default function App() {
         onCloseGlobal={clearGlobalAlert}
       />
 
-      {/* 1. LEFT SIDEBAR */}
-      <aside className="w-full md:w-80 bg-slate-950 border-r border-slate-900 flex flex-col h-auto md:h-screen sticky top-0 flex-shrink-0 z-20">
-        {/* Brand */}
-        <div className="p-5 border-b border-slate-900 flex items-center justify-between">
+      {/* Mobile Top Navigation Header */}
+      <header className="md:hidden w-full bg-slate-950/80 backdrop-blur border-b border-slate-900 px-5 py-4 flex items-center justify-between sticky top-0 z-30">
+        <div className="flex items-center space-x-2 text-emerald-500">
+          <span className="text-xl">🌱</span>
+          <span className="text-sm font-black text-white tracking-tight">TerraClimate</span>
+        </div>
+        <div className="flex items-center space-x-2">
+          <button 
+            onClick={() => setIsNotificationOpen(true)}
+            className="p-2 rounded-lg bg-slate-900 border border-slate-800 text-slate-400 hover:text-emerald-400 transition-all cursor-pointer relative"
+          >
+            <FiBell className="w-4 h-4" />
+            {notifications.filter(n => !n.read).length > 0 && (
+              <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-rose-500 text-[8px] font-bold text-white ring-2 ring-slate-950 animate-pulse">
+                {notifications.filter(n => !n.read).length}
+              </span>
+            )}
+          </button>
+          <button 
+            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+            className="p-2 rounded-lg bg-slate-900 border border-slate-800 text-slate-400 hover:text-emerald-400 transition-all cursor-pointer"
+          >
+            {isMobileMenuOpen ? <FiX className="w-4 h-4" /> : <FiMenu className="w-4 h-4" />}
+          </button>
+        </div>
+      </header>
+
+      {/* Mobile Menu Backdrop */}
+      {isMobileMenuOpen && (
+        <div 
+          onClick={() => setIsMobileMenuOpen(false)}
+          className="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-30 md:hidden"
+        />
+      )}
+
+      {/* 1. LEFT SIDEBAR / MOBILE SLIDE-OVER DRAWER */}
+      <aside className={`
+        fixed inset-y-0 left-0 w-72 bg-slate-950 border-r border-slate-900 flex flex-col h-screen z-40 transform transition-transform duration-300 ease-in-out
+        md:relative md:translate-x-0 md:w-80 md:flex-shrink-0 md:z-20
+        ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}
+      `}>
+        {/* Brand (Desktop only) */}
+        <div className="hidden md:flex p-5 border-b border-slate-900 items-center justify-between">
           <div className="flex items-center space-x-2 text-emerald-500">
             <span className="text-xl">🌱</span>
             <h1 className="text-lg font-black text-white tracking-tight">TerraClimate</h1>
@@ -487,14 +537,29 @@ export default function App() {
           </button>
         </div>
 
-
+        {/* Search Bar */}
+        <div className="px-5 py-3 border-b border-slate-900">
+          <form onSubmit={handleSearchSubmit} className="relative">
+            <input 
+              type="text" 
+              placeholder="Search city (e.g. Nairobi)..." 
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full pl-9 pr-4 py-2.5 rounded-xl text-xs glass-input text-slate-300 placeholder-slate-500"
+            />
+            <FiSearch className="absolute left-3 top-3 text-slate-500 w-3.5 h-3.5" />
+          </form>
+        </div>
 
         {/* Saved Farms Directory */}
         <div className="flex-1 overflow-y-auto p-5 space-y-4 terminal-scrollbar">
           <div className="flex items-center justify-between text-xs font-bold uppercase tracking-wider text-slate-500">
             <span>My Registered Farms</span>
             <button 
-              onClick={() => setIsAddFarmOpen(true)}
+              onClick={() => {
+                setIsAddFarmOpen(true);
+                setIsMobileMenuOpen(false);
+              }}
               className="p-1 rounded bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/25 transition-all cursor-pointer"
             >
               <FiPlus className="w-3.5 h-3.5" />
@@ -506,7 +571,10 @@ export default function App() {
               farms.map((item) => (
                 <button
                   key={item.id}
-                  onClick={() => setSelectedFarm(item)}
+                  onClick={() => {
+                    setSelectedFarm(item);
+                    setIsMobileMenuOpen(false); // Close mobile drawer on selection
+                  }}
                   className={`w-full flex items-center space-x-3 p-3 rounded-xl text-left text-xs transition-all cursor-pointer ${
                     selectedFarm?.id === item.id 
                       ? 'bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 font-bold'

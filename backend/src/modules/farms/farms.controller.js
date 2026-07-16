@@ -22,7 +22,8 @@ export const createFarm = async (req, res) => {
     notifyInApp,
     region,
     country,
-    timezone
+    timezone,
+    city
   } = req.body;
 
   if (!name || latitude === undefined || longitude === undefined || !cropType) {
@@ -38,6 +39,7 @@ export const createFarm = async (req, res) => {
         longitude: parseFloat(longitude),
         cropType,
         imageUrl: imageUrl || null,
+        city: city || null,
         region: region || null,
         country: country || null,
         timezone: timezone || null,
@@ -190,7 +192,8 @@ export const updateFarm = async (req, res) => {
     notifyInApp,
     region,
     country,
-    timezone
+    timezone,
+    city
   } = req.body;
 
   if (!name || latitude === undefined || longitude === undefined || !cropType) {
@@ -214,6 +217,7 @@ export const updateFarm = async (req, res) => {
         longitude: parseFloat(longitude),
         cropType,
         imageUrl: imageUrl || null,
+        city: city || null,
         region: region || null,
         country: country || null,
         timezone: timezone || null,

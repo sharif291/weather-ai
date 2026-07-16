@@ -25,6 +25,7 @@ model Farm {
   longitude     Float
   cropType      String       // e.g. "Tea", "Maize", "Wheat"
   imageUrl      String?      // S3 uploaded drone map / satellite photo link
+  city          String?
   region        String?
   country       String?
   timezone      String?
