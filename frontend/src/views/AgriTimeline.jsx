@@ -74,7 +74,7 @@ export const AgriTimeline = ({ farm, weather }) => {
   return (
     <div className="space-y-6">
       {/* 1. HOURLY TEMPERATURE & RAIN GRADIENT CHART */}
-      <div className="glass-panel p-6 rounded-2xl">
+      <div className="glass-panel p-2 md:p-6 rounded-2xl">
         <div className="flex items-center space-x-2 text-emerald-400 mb-4">
           <FiTrendingUp className="w-5 h-5" />
           <h3 className="text-base font-bold text-white">24-Hour Trend Micro-Analytics</h3>
@@ -115,7 +115,7 @@ export const AgriTimeline = ({ farm, weather }) => {
       </div>
 
       {/* 2. INTERACTIVE HOURLY OPERATIONS SLIDER */}
-      <div className="glass-panel p-6 rounded-2xl space-y-5">
+      <div className="glass-panel p-2 md:p-6 rounded-2xl space-y-5">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-2 text-emerald-400">
             <FiClock className="w-5 h-5" />
@@ -147,7 +147,7 @@ export const AgriTimeline = ({ farm, weather }) => {
 
         {/* Selected Hour Details Grid */}
         {activeHour && (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 rounded-xl bg-slate-950/40 border border-slate-900/60 animate-fade-in">
+          <div className="grid grid-cols-3 gap-4 items-center p-4 rounded-xl bg-slate-950/40 border border-slate-900/60 animate-fade-in">
             <div className="space-y-1">
               <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider block">Conditions</span>
               <div className="flex items-center space-x-2">
@@ -180,7 +180,7 @@ export const AgriTimeline = ({ farm, weather }) => {
       </div>
 
       {/* 3. HISTORICAL CLIMATE COMPARISON PANEL */}
-      <div className="glass-panel p-6 rounded-2xl space-y-4">
+      <div className="glass-panel p-2 md:p-6 rounded-2xl space-y-4">
         <div className="flex items-center space-x-2 text-emerald-400">
           <FiCalendar className="w-5 h-5" />
           <h3 className="text-base font-bold text-white">Historical Climate Trend Lookup</h3>
@@ -190,7 +190,7 @@ export const AgriTimeline = ({ farm, weather }) => {
         </p>
 
         <form onSubmit={handleCompareHistory} className="flex flex-wrap gap-3 items-end">
-          <div className="flex-1 min-w-[200px] space-y-1.5">
+          <div className="flex-1 min-w-[100px] space-y-1.5">
             <label className="text-[10px] text-slate-400 uppercase font-bold tracking-wider">Select Past Date</label>
             <input 
               type="date"

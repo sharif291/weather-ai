@@ -5,12 +5,12 @@ import {
   FiCompass,
   FiEdit,
   FiFileText,
+  FiImage,
   FiInfo,
   FiPlay,
   FiSun,
   FiTrash2,
   FiWind,
-  FiImage,
   FiX
 } from 'react-icons/fi';
 import apiService from '../services/api';

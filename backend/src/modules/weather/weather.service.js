@@ -116,19 +116,19 @@ class WeatherService {
     }
   }
 
-  async getCurrent(query, aqi = 'no') {
+  async getCurrent(query) {
     const q = query || 'Nairobi';
     const parsed = parseQuery(q);
     
     let data;
     if (parsed.isCoords) {
       const { lat, lon } = parsed;
-      const cacheKey = `weather:current:lat:${lat}:lon:${lon}:aqi:${aqi}`;
-      data = await this.fetchWithProxy('/v1/current', { lat, lon, aqi }, cacheKey);
+      const cacheKey = `weather:current:lat:${lat}:lon:${lon}`;
+      data = await this.fetchWithProxy('/v1/current', { lat, lon }, cacheKey);
     } else {
       const { city } = parsed;
-      const cacheKey = `weather:geo:city:${city}:aqi:${aqi}`;
-      data = await this.fetchWithProxy('/v1/weather-geo', { city, aqi }, cacheKey);
+      const cacheKey = `weather:geo:city:${city}`;
+      data = await this.fetchWithProxy('/v1/weather-geo', { city }, cacheKey);
     }
 
     const cond = getWmoCondition(data.current?.weathercode);

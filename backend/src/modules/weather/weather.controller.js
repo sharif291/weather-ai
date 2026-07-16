@@ -3,9 +3,9 @@ import { cacheService } from '../../core/redis.js';
 import { queueService } from '../../core/queue.js';
 
 export const getCurrentWeather = async (req, res) => {
-  const { q, aqi } = req.query;
+  const { q } = req.query;
   try {
-    const data = await weatherService.getCurrent(q, aqi);
+    const data = await weatherService.getCurrent(q);
     return res.json(data);
   } catch (err) {
     return res.status(err.response?.status || 500).json({ 

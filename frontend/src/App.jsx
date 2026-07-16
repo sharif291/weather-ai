@@ -1,18 +1,28 @@
-import React, { useState, useEffect } from 'react';
-import { 
-  FiMapPin, FiCompass, FiPlus, FiCpu, FiLogOut, 
-  FiSearch, FiLock, FiMail, FiUser, FiActivity, FiX, FiAlertCircle,
-  FiBell, FiCheck, FiCheckCircle, FiMenu
+import { useEffect, useState } from 'react';
+import {
+  FiActivity,
+  FiAlertCircle,
+  FiBell, FiCheck, FiCheckCircle,
+  FiCompass,
+  FiLock,
+  FiLogOut,
+  FiMail,
+  FiMapPin,
+  FiMenu,
+  FiPlus,
+  FiSearch,
+  FiUser,
+  FiX
 } from 'react-icons/fi';
-import { firebaseService } from './services/firebase.js';
-import { apiService } from './services/api.js';
-import { useFarms } from './hooks/useFarms.js';
-import { useWeather } from './hooks/useWeather.js';
-import { useRealtimeAlerts } from './hooks/useRealtimeAlerts.js';
-import FarmPlanner from './views/FarmPlanner.jsx';
-import AgriTimeline from './views/AgriTimeline.jsx';
-import NotificationToast from './components/NotificationToast.jsx';
 import ImageUploader from './components/ImageUploader.jsx';
+import NotificationToast from './components/NotificationToast.jsx';
+import { useFarms } from './hooks/useFarms.js';
+import { useRealtimeAlerts } from './hooks/useRealtimeAlerts.js';
+import { useWeather } from './hooks/useWeather.js';
+import { apiService } from './services/api.js';
+import { firebaseService } from './services/firebase.js';
+import AgriTimeline from './views/AgriTimeline.jsx';
+import FarmPlanner from './views/FarmPlanner.jsx';
 
 export default function App() {
   const [user, setUser] = useState(null);
@@ -617,7 +627,7 @@ export default function App() {
       </aside>
 
       {/* 2. MAIN CONTENT SPACE */}
-      <main className="flex-1 overflow-y-auto p-6 md:p-8 space-y-6">
+      <main className="flex-1 overflow-y-auto p-2 md:p-8 space-y-6">
         {/* Navigation Tabs */}
         <div className="flex items-center justify-between border-b border-slate-900 pb-4">
           <div className="flex space-x-1">

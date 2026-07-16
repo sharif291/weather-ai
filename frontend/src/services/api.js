@@ -30,8 +30,8 @@ api.interceptors.request.use(async (config) => {
 // ----------------------------------------------------
 export const apiService = {
   // Weather Routes
-  getCurrent: async (q, aqi = 'yes') => {
-    const res = await api.get('/api/weather/current', { params: { q, aqi } });
+  getCurrent: async (q) => {
+    const res = await api.get('/api/weather/current', { params: { q } });
     return res.data;
   },
 
