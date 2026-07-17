@@ -15,7 +15,7 @@ export const AuthScreen = () => {
     setAuthError(null);
     setLoading(true);
     try {
-      await firebaseService.auth.login(authEmail, authPassword);
+      await firebaseService.auth.signIn(authEmail, authPassword);
     } catch (err) {
       setAuthError(err.message);
     } finally {
@@ -28,7 +28,7 @@ export const AuthScreen = () => {
     setAuthError(null);
     setLoading(true);
     try {
-      await firebaseService.auth.register(authEmail, authPassword, authName);
+      await firebaseService.auth.signUp(authEmail, authPassword, authName);
     } catch (err) {
       setAuthError(err.message);
     } finally {
