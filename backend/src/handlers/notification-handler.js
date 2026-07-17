@@ -29,22 +29,23 @@ const processMessage = async (msg) => {
     const shouldNotifySms = config && config.notifySms;
     const shouldNotifyDiscord = config && config.notifyDiscord;
 
+    // Create the AlertLog unconditionally in PostgreSQL first, so geocoder duplicate scanners can track it
+    let alertLogId = null;
+    if (farmId) {
+      const log = await prisma.alertLog.create({
+        data: {
+          farmId,
+          type: alertType || 'ALERT',
+          message,
+          status: 'DISPATCHED'
+        }
+      });
+      alertLogId = log.id;
+      console.log(`[NotificationHandler] PostgreSQL AlertLog created successfully for farm ID: ${farmId}`);
+    }
+
     // 1. In-App Notification Flow
     if (shouldNotifyInApp) {
-      let alertLogId = null;
-      if (farmId) {
-        const log = await prisma.alertLog.create({
-          data: {
-            farmId,
-            type: alertType || 'ALERT',
-            message,
-            status: 'DISPATCHED'
-          }
-        });
-        alertLogId = log.id;
-        console.log(`[NotificationHandler] [In-App Channel] PostgreSQL AlertLog updated successfully for farm ID: ${farmId}`);
-      }
-
       const firestore = firebaseAdmin.firestore();
       const timestamp = new Date();
 
