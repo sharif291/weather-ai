@@ -106,6 +106,33 @@ export const AgriTimeline = ({ farm, weather }) => {
 
   return (
     <div className="space-y-6">
+      {/* Mobile-only Location Metadata Header */}
+      <div className="md:hidden glass-panel p-5 rounded-2xl space-y-3 border border-slate-900 bg-slate-950/20">
+        <div className="flex items-center justify-between">
+          <span className="text-[10px] uppercase font-bold text-slate-500 tracking-wider">Active Monitoring Location</span>
+          {farm?.cropType && (
+            <span className="px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 font-mono text-[9px] font-bold">
+              Crop: {farm.cropType}
+            </span>
+          )}
+        </div>
+        <h4 className="text-sm font-black text-white">{farm?.name || 'Active Query'}</h4>
+        <div className="grid grid-cols-3 gap-4 text-[10px] text-slate-400 font-mono pt-1">
+          <div>
+            <span className="block text-[8px] text-slate-600 font-bold uppercase mb-0.5">City</span>
+            <span className="text-slate-300 font-semibold">{farm?.city || weather.currentWeather?.location?.name || 'N/A'}</span>
+          </div>
+          <div>
+            <span className="block text-[8px] text-slate-600 font-bold uppercase mb-0.5">Latitude</span>
+            <span className="text-slate-300 font-semibold">{farm?.latitude || weather.currentWeather?.location?.lat || 'N/A'}</span>
+          </div>
+          <div>
+            <span className="block text-[8px] text-slate-600 font-bold uppercase mb-0.5">Longitude</span>
+            <span className="text-slate-300 font-semibold">{farm?.longitude || weather.currentWeather?.location?.lon || 'N/A'}</span>
+          </div>
+        </div>
+      </div>
+
       {/* 1. HOURLY TEMPERATURE & RAIN GRADIENT CHART */}
       <div className="glass-panel p-2 md:p-6 rounded-2xl">
         <div className="flex items-center space-x-2 text-emerald-400 mb-4">
