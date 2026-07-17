@@ -95,6 +95,38 @@ weather-ai/
 
 ---
 
+## 📖 How to Use (Features & Alert Guidelines)
+
+TerraClimate is designed as an interactive portal to orchestrate crop-specific weather parameters and manage farm health settings.
+
+### 1. Registering and Managing Farms
+*   **Create a Farm**: Log in, click the `+` button in the sidebar under "My Registered Farms", and fill out the coordinates, crop type, and weather thresholds.
+*   **Coordinate Picker**: Use the Leaflet Map Modal to click on any point on the map to automatically populate latitude and longitude coordinates. Alternatively, type coordinates manually or type a city name to use geocoding search.
+*   **Blueprint Uploads**: Drag and drop or upload a farm layout image (PNG/JPEG). The browser requests a secure presigned PUT URL and uploads it directly to the AWS S3 storage bucket.
+*   **Editing & Decommissioning**: Click the edit gear icon next to any farm to adjust thresholds or decommission (delete) the farm profile.
+
+### 2. Micro-Climate Charts and Hourly Trends
+*   **Hourly & Trends View**: Select a farm from the sidebar to load its weather dashboard.
+*   **24-Hour Micro-Analytics Chart**: Visualize temperature and rain probability curves. Hover over the chart to see local dates and hours dynamically formatted in the tooltip.
+*   **Operational Slider**: Drag the fieldwork hourly planner slider (00:00 to 23:00) to check temperature, condition summaries, and rain probabilities for specific hours.
+*   **Historical Climate Trend Lookup**: Select a past calendar date and hit "Compare Trends" to run comparative data indexes comparing historical precipitation and average temperatures side-by-side with today's readings.
+
+### 3. Automated Advisory Scans & Real-Time Alerts
+The background advisory engine scans all active farms hourly, comparing actual weather data against user-defined alert thresholds:
+
+| Alert Type | Threshold Field | Default Trigger Condition | Default Advisory Action & Message |
+| :--- | :--- | :--- | :--- |
+| **WIND_ALERT** | Wind Speed (`windThreshold`) | Actual wind speed > threshold | Enqueues warning task: *"High wind warnings detected. Please cancel pesticide spraying."* |
+| **STORM_ALERT** | Rain (`rainThreshold`) | Actual precipitation > threshold | Enqueues warning task: *"Severe storm/precipitation forecast. Hold fertilizer applications."* |
+
+*   **Custom Notifications**: Configure the farm settings to select dispatch channels:
+    *   **In-App Alerts**: Pushes a real-time notification toast on the UI using Firestore listeners.
+    *   **Email Logs**: Sends an email advisory summary to the user's registered address.
+    *   **Discord Webhooks**: Broadcasts alerts instantly to configured Discord channels.
+*   **Advisory Simulator**: You can manually trigger simulations for testing by clicking **Trigger Alert Simulation** inside the settings drawer to test pipeline health instantly.
+
+---
+
 ## ⚡ Caching, SaaS Isolation & Queue Resiliency (Scaling Shields)
 
 To safeguard the application from scale limits and ensure high availability:
