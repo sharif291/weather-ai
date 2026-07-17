@@ -6,57 +6,6 @@ It translates raw micro-climate weather feeds from the WeatherAI API into locali
 
 ---
 
-## 🏛️ System Architecture
-
-```mermaid
-graph TD
-    subgraph Client Space
-        A[React Client - S3/CloudFront]
-    end
-
-    subgraph Authentication & Realtime
-        B[Firebase Auth]
-        I[Cloud Firestore]
-    end
-
-    subgraph API Gateway & Compute
-        D[Node.js Proxy API - API Gateway/Lambda]
-        H[Serverless Worker - AWS Lambda]
-        J[Scheduler - EventBridge/Lambda]
-    end
-
-    subgraph Data & Queue Layers
-        C[PostgreSQL Database - Neon]
-        E[Redis Cache - Upstash]
-        F[AWS SQS Queue]
-        G[AWS S3 Uploads Bucket]
-    end
-
-    subgraph Integrations
-        K[External APIs - WeatherAI, Twilio, SMTP, Discord]
-    end
-
-    A -->|1. Authenticates| B
-    A -->|2. HTTP Requests - CRUD, Geo| D
-    D -->|3. Verifies Tokens| B
-    D -->|4. Queries & Syncs Profiles/Farms| C
-    D -->|5. Checks Cache| E
-    D -->|6. Resolves Cache Misses| K
-    D -->|7. Generates Presigned URLs| G
-    A -->|8. Uploads Blueprints Directly| G
-    
-    J -->|9. Scans Farms & Keys| C
-    J -->|10. Evaluates Thresholds| K
-    J -->|11. Enqueues Warning Tasks| F
-    
-    F -->|12. Triggers SQS Message Events| H
-    H -->|13. Writes Realtime Logs| I
-    H -->|14. Dispatches SMS / Email / Discord Alerts| K
-    I -->|15. Syncs Alerts Instantly| A
-```
-
----
-
 ## 🛠️ The Tech Stack
 
 *   **Frontend**: React (Vite), Tailwind CSS v4, Recharts (weather trend curves), React Icons.
