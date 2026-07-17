@@ -109,7 +109,81 @@ To safeguard the application from scale limits and ensure high availability:
 
 ## ⚙️ Environmental Setup
 
-To run the application, configure environment files in both folders.
+To run the application locally or in production, configure environment files in both the `/backend` and `/frontend` directories.
+
+### 1. Backend Setup (`backend/.env`)
+
+Create a `.env` file in the `backend/` directory:
+
+```env
+# Server Port Configuration
+PORT=3000
+
+# PostgreSQL Database Connection (Prisma)
+DATABASE_URL="postgresql://postgres:postgres@localhost:5432/terraclimate"
+
+# WeatherAI API Configuration
+WEATHER_AI_API_KEY="wai_live_xxxxxx"
+
+# Caching Configuration (Requires Redis)
+REDIS_URL="redis://localhost:6379"
+
+# AWS Configuration (SQS notifications & S3 uploads)
+AWS_REGION="us-east-2"
+AWS_ACCESS_KEY_ID=""
+AWS_SECRET_ACCESS_KEY=""
+AWS_S3_UPLOAD_BUCKET="terraclimate-uploads-bucket"
+
+# AWS SQS Queue URLs (Use local ElasticMQ endpoints for local development)
+AWS_SQS_QUEUE_URL="http://localhost:9324/queue/terraclimate-notification-queue"
+AWS_ENDPOINT_URL_SQS="http://localhost:9324"
+
+# Firebase Admin Configuration (Required for Auth token validation & Realtime alerts)
+FIREBASE_PROJECT_ID="terraclimate-xxxxx"
+FIREBASE_CLIENT_EMAIL="firebase-adminsdk-xxxxx@terraclimate-xxxxx.iam.gserviceaccount.com"
+FIREBASE_PRIVATE_KEY="<PRIVATE_KEY>"
+```
+
+#### How to obtain Backend parameters:
+*   **DATABASE_URL**: Connects Prisma to PostgreSQL. For local sandbox development, use the preconfigured docker link above. For production setups, create a database on **Neon** (`neon.tech`) or AWS RDS and copy the connection string.
+*   **WEATHER_AI_API_KEY**: Sign up at the **WeatherAI Developer Portal** and generate an API key (begins with `wai_live_`).
+*   **FIREBASE Admin Credentials**: 
+    1. Open the [Firebase Console](https://console.firebase.google.com/).
+    2. Go to **Project Settings** ➔ **Service Accounts**.
+    3. Click **Generate New Private Key** to download a JSON credentials file.
+    4. Extract `project_id`, `client_email`, and format the multi-line `private_key` (ensuring `\n` linebreaks are preserved).
+*   **AWS Credentials**:
+    1. Create an IAM user with programmatic credentials (`AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`) and attach S3 and SQS full access policy permissions.
+    2. Create an AWS S3 Bucket and enable CORS configuration for presigned uploads.
+    3. Create an AWS SQS Standard Queue.
+    4. For local offline emulation, map these variables to `localhost:9324` as configured in the template.
+
+---
+
+### 2. Frontend Setup (`frontend/.env`)
+
+Create a `.env` file in the `frontend/` directory:
+
+```env
+VITE_API_URL="http://localhost:3000"
+
+# Firebase Client SDK Credentials
+VITE_FIREBASE_API_KEY=""
+VITE_FIREBASE_AUTH_DOMAIN=""
+VITE_FIREBASE_PROJECT_ID=""
+VITE_FIREBASE_STORAGE_BUCKET=""
+VITE_FIREBASE_SENDER_ID=""
+VITE_FIREBASE_APP_ID=""
+```
+
+#### How to obtain Frontend parameters:
+*   **VITE_API_URL**: Points the React proxy client to your backend server. Use `http://localhost:3000` for local runs, or your CDK API Gateway distribution URL in production.
+*   **VITE_FIREBASE SDK Config**:
+    1. Open your project in the [Firebase Console](https://console.firebase.google.com/).
+    2. Click the **Gear Icon** (next to Project Overview) ➔ **Project Settings** ➔ **General**.
+    3. Under **Your Apps**, add a web application to get the configurations code block containing the API Key, Auth Domain, Project ID, Storage Bucket, Messaging Sender ID, and App ID.
+    4. Go to **Authentication** (in sidebar) and enable the **Email/Password** and **Google** Sign-In providers. Add your staging domains to the **Authorized Domains** list.
+    5. Go to **Firestore Database** and create a database instance in production or test mode.
 
 ---
 
