@@ -31,9 +31,42 @@ export const AgriTimeline = ({ farm, weather }) => {
   // Prepare chart coordinates data
   const chartData = hourlyData.map((item, idx) => ({
     hour: item.time,
+    date: item.date,
     temperature: item.temp_c,
     rainChance: item.chance_of_rain || 0,
   }));
+  const formatTooltipLabel = (label, payload) => {
+    const activeItem = payload?.[0]?.payload;
+    const dateVal = activeItem?.date;
+
+    if (dateVal) {
+      try {
+        const formattedDate = new Date(dateVal).toLocaleDateString(undefined, {
+          month: 'short',
+          day: 'numeric',
+          year: 'numeric'
+        });
+        return `${formattedDate} at ${label}`;
+      } catch (e) {
+        return `${dateVal} at ${label}`;
+      }
+    }
+
+    const matched = chartData.find(d => d.hour === label);
+    if (matched && matched.date) {
+      try {
+        const formattedDate = new Date(matched.date).toLocaleDateString(undefined, {
+          month: 'short',
+          day: 'numeric',
+          year: 'numeric'
+        });
+        return `${formattedDate} at ${label}`;
+      } catch (e) {
+        return `${matched.date} at ${label}`;
+      }
+    }
+    return label;
+  };
 
   // Fetch historical data comparisons
   const handleCompareHistory = async (e) => {
@@ -80,37 +113,40 @@ export const AgriTimeline = ({ farm, weather }) => {
           <h3 className="text-base font-bold text-white">24-Hour Trend Micro-Analytics</h3>
         </div>
 
-        <div className="w-full h-64 font-mono text-xs">
-          {chartData.length > 0 ? (
-            <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={chartData} margin={{ top: 10, right: 10, left: -25, bottom: 0 }}>
-                <defs>
-                  <linearGradient id="colorTemp" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#10b981" stopOpacity={0.25}/>
-                    <stop offset="95%" stopColor="#10b981" stopOpacity={0}/>
-                  </linearGradient>
-                  <linearGradient id="colorRain" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.25}/>
-                    <stop offset="95%" stopColor="#3b82f6" stopOpacity={0}/>
-                  </linearGradient>
-                </defs>
-                <XAxis dataKey="hour" stroke="#475569" tickLine={false} />
-                <YAxis stroke="#475569" tickLine={false} />
-                <Tooltip 
-                  contentStyle={{ 
-                    backgroundColor: '#0f172a', 
-                    borderColor: 'rgba(255,255,255,0.05)',
-                    borderRadius: '12px',
-                    color: '#f8fafc'
-                  }} 
-                />
-                <Area type="monotone" dataKey="temperature" name="Temp (°C)" stroke="#10b981" strokeWidth={2} fillOpacity={1} fill="url(#colorTemp)" />
-                <Area type="monotone" dataKey="rainChance" name="Rain (%)" stroke="#3b82f6" strokeWidth={2} fillOpacity={1} fill="url(#colorRain)" />
-              </AreaChart>
-            </ResponsiveContainer>
-          ) : (
-            <div className="h-full flex items-center justify-center text-slate-500">No hourly data load.</div>
-          )}
+        <div className="w-full overflow-x-auto terminal-scrollbar pb-2">
+          <div className="h-64 font-mono text-xs min-w-[700px] md:min-w-0">
+            {chartData.length > 0 ? (
+              <ResponsiveContainer width="100%" height="100%">
+                <AreaChart data={chartData} margin={{ top: 10, right: 10, left: -25, bottom: 0 }}>
+                  <defs>
+                    <linearGradient id="colorTemp" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#10b981" stopOpacity={0.25}/>
+                      <stop offset="95%" stopColor="#10b981" stopOpacity={0}/>
+                    </linearGradient>
+                    <linearGradient id="colorRain" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.25}/>
+                      <stop offset="95%" stopColor="#3b82f6" stopOpacity={0}/>
+                    </linearGradient>
+                  </defs>
+                  <XAxis dataKey="hour" stroke="#475569" tickLine={false} />
+                  <YAxis stroke="#475569" tickLine={false} />
+                  <Tooltip 
+                    labelFormatter={formatTooltipLabel}
+                    contentStyle={{ 
+                      backgroundColor: '#0f172a', 
+                      borderColor: 'rgba(255,255,255,0.05)',
+                      borderRadius: '12px',
+                      color: '#f8fafc'
+                    }} 
+                  />
+                  <Area type="monotone" dataKey="temperature" name="Temp (°C)" stroke="#10b981" strokeWidth={2} fillOpacity={1} fill="url(#colorTemp)" />
+                  <Area type="monotone" dataKey="rainChance" name="Rain (%)" stroke="#3b82f6" strokeWidth={2} fillOpacity={1} fill="url(#colorRain)" />
+                </AreaChart>
+              </ResponsiveContainer>
+            ) : (
+              <div className="h-full flex items-center justify-center text-slate-500">No hourly data load.</div>
+            )}
+          </div>
         </div>
       </div>
 

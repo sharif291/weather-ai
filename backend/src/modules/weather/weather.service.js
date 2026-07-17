@@ -214,8 +214,10 @@ class WeatherService {
     const hourly = rawHourly.map(h => {
       const cond = getWmoCondition(h.weathercode);
       const timeStr = h.time ? (h.time.includes('T') ? h.time.split('T')[1] : h.time) : '00:00';
+      const dateStr = h.time && h.time.includes('T') ? h.time.split('T')[0] : new Date().toISOString().split('T')[0];
       return {
         time: timeStr,
+        date: dateStr,
         temp_c: h.temp,
         precip_mm: h.precipitation,
         chance_of_rain: getRainChanceFromWmo(h.weathercode),
