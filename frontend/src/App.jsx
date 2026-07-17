@@ -61,17 +61,26 @@ export default function App() {
       setAuthLoading(false);
       
       if (currentUser) {
-        refetchFarms();
         try {
-          const loc = await apiService.getIpLookup();
-          if (loc && loc.geo && loc.geo.lat !== undefined && loc.geo.lon !== undefined) {
-            const coordStr = `${loc.geo.lat},${loc.geo.lon}`;
-            setActiveWeatherQuery(coordStr);
+          // Fetch farms directly first
+          const loadedFarms = await apiService.getFarms();
+          refetchFarms();
+          
+          if (loadedFarms && loadedFarms.length > 0) {
+            setSelectedFarm(loadedFarms[0]);
+            setActiveWeatherQuery(`${loadedFarms[0].latitude},${loadedFarms[0].longitude}`);
           } else {
-            setActiveWeatherQuery('');
+            // Fallback to IP geolocation if no farms are registered
+            const loc = await apiService.getIpLookup();
+            if (loc && loc.geo && loc.geo.lat !== undefined && loc.geo.lon !== undefined) {
+              const coordStr = `${loc.geo.lat},${loc.geo.lon}`;
+              setActiveWeatherQuery(coordStr);
+            } else {
+              setActiveWeatherQuery('');
+            }
           }
         } catch (err) {
-          console.warn('[IP Location] IP Lookup failed. Clearing query:', err.message);
+          console.warn('[Initialization] Farm/Location load failed:', err.message);
           setActiveWeatherQuery('');
         }
       }

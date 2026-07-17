@@ -188,9 +188,9 @@ export const FarmPlanner = ({ farm, weather, refetchFarms, onDeleteFarm, onEditF
       </div>
 
       {/* 2. REAL-TIME MICRO-CLIMATE DIAGNOSTICS */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-3 gap-4">
         {/* Temp Card */}
-        <div className="glass-panel p-5 rounded-2xl flex items-center space-x-4">
+        <div className="glass-panel p-5 rounded-2xl flex flex-wrap items-center space-x-4">
           <div className="p-3 bg-emerald-500/15 text-emerald-400 rounded-xl">
             <FiSun className="w-6 h-6" />
           </div>
@@ -203,7 +203,7 @@ export const FarmPlanner = ({ farm, weather, refetchFarms, onDeleteFarm, onEditF
         </div>
 
         {/* Wind Compass Card */}
-        <div className="glass-panel p-5 rounded-2xl flex items-center space-x-4">
+        <div className="glass-panel p-5 rounded-2xl flex flex-wrap items-center space-x-4">
           <div className="p-3 bg-cyan-500/15 text-cyan-400 rounded-xl relative">
             <FiCompass className="w-6 h-6 animate-spin-slow" />
           </div>
@@ -219,7 +219,7 @@ export const FarmPlanner = ({ farm, weather, refetchFarms, onDeleteFarm, onEditF
         </div>
 
         {/* Rain Card */}
-        <div className="glass-panel p-5 rounded-2xl flex items-center space-x-4">
+        <div className="glass-panel p-5 rounded-2xl flex flex-wrap items-center space-x-4">
           <div className="p-3 bg-blue-500/15 text-blue-400 rounded-xl">
             <FiCloudRain className="w-6 h-6" />
           </div>
@@ -237,7 +237,7 @@ export const FarmPlanner = ({ farm, weather, refetchFarms, onDeleteFarm, onEditF
 
       {/* 3. RULE-BASED AGRO-ADVISORY ALERTS */}
       <div className="glass-panel rounded-2xl p-6">
-        <h3 className="text-base font-bold text-white mb-4">Precision Crop Advisories {alerts.length}</h3>
+        <h3 className="text-base font-bold text-white mb-4">{alerts.length} Precision Crop Advisories</h3>
         
         {alerts.length > 0 ? (
           <div className="space-y-3">

@@ -1,5 +1,5 @@
-import React, { useEffect, useRef, useState } from 'react';
 import L from 'leaflet';
+import { useEffect, useRef, useState } from 'react';
 
 export const MapPicker = ({ lat, lon, onChange }) => {
   const mapContainerRef = useRef(null);
@@ -110,27 +110,6 @@ export const MapPicker = ({ lat, lon, onChange }) => {
 
   return (
     <div className="space-y-2">
-      <form onSubmit={handleMapSearch} className="flex gap-2">
-        <input
-          type="text"
-          placeholder="Search coordinates on map (e.g. Nairobi)..."
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          className="flex-1 px-3.5 py-2 rounded-xl text-xs glass-input text-slate-300 font-medium"
-        />
-        <button
-          type="submit"
-          disabled={searchLoading}
-          className="px-4 py-2 rounded-xl bg-slate-800 border border-slate-700 hover:bg-slate-700 text-white text-xs font-bold transition-all cursor-pointer disabled:opacity-50"
-        >
-          {searchLoading ? 'Searching...' : 'Search'}
-        </button>
-      </form>
-
-      {searchError && (
-        <p className="text-[10px] text-rose-400 font-semibold italic">{searchError}</p>
-      )}
-
       <div 
         ref={mapContainerRef} 
         className="w-full h-44 rounded-xl border border-slate-800 shadow bg-slate-950 overflow-hidden"
